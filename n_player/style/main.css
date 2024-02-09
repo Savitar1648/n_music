@@ -1,0 +1,15 @@
+.song {
+    width: 100%;
+}
+
+.song-current {
+    background-color: rgba(127, 255, 212, 0.4);
+}
+
+.song:hover {
+    background-color: rgba(0, 255, 255, 0.3);
+}
+
+.song-current:hover {
+    background-color: rgba(0, 255, 255, 0.3);
+}
