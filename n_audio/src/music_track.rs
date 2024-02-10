@@ -58,8 +58,7 @@ impl MusicTrack {
         probed.format
     }
 
-    pub fn get_duration(&self) -> TrackTime {
-        let format = self.get_format();
+    pub fn get_duration_from_format(&self, format: Box<dyn FormatReader>) -> TrackTime {
         let track = format.default_track().expect("Can't load tracks");
         let time_base = track.codec_params.time_base.unwrap();
 
@@ -78,13 +77,8 @@ impl MusicTrack {
         }
     }
 
-    pub fn get_tags(&mut self) -> Option<MetadataLog> {
-        // self.get_probe().metadata.into_inner()
-        None
-        // if let Ok(exif) = self.get_probe().metadata {
-        //     Some(exif.get_xmp_tags().unwrap())
-        // } else {
-        //     None
-        // }
+    pub fn get_duration(&self) -> TrackTime {
+        let format = self.get_format();
+        self.get_duration_from_format(format)
     }
 }
