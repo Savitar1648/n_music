@@ -9,6 +9,8 @@ use symphonia::core::units::Time;
 use symphonia::default::{register_enabled_codecs, register_enabled_formats};
 use symphonia_core::probe::Probe;
 
+pub use symphonia_core::meta;
+
 mod dca;
 pub mod music_track;
 mod opus;

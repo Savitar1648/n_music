@@ -7,6 +7,7 @@ use symphonia::core::formats::{FormatOptions, FormatReader};
 use symphonia::core::io::MediaSourceStream;
 use symphonia::core::meta::MetadataOptions;
 use symphonia::core::probe::Hint;
+use symphonia_core::meta::MetadataLog;
 
 use crate::{from_path_to_name_without_ext, TrackTime, PROBE};
 
@@ -75,5 +76,15 @@ impl MusicTrack {
             dur_secs: time.seconds,
             dur_frac: time.frac,
         }
+    }
+
+    pub fn get_tags(&mut self) -> Option<MetadataLog> {
+        // self.get_probe().metadata.into_inner()
+        None
+        // if let Ok(exif) = self.get_probe().metadata {
+        //     Some(exif.get_xmp_tags().unwrap())
+        // } else {
+        //     None
+        // }
     }
 }
