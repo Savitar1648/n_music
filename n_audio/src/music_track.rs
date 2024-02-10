@@ -1,15 +1,12 @@
+use crate::{from_path_to_name_without_ext, TrackTime, PROBE};
 use std::error::Error;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::path::Path;
-
 use symphonia::core::formats::{FormatOptions, FormatReader};
 use symphonia::core::io::MediaSourceStream;
 use symphonia::core::meta::MetadataOptions;
 use symphonia::core::probe::Hint;
-use symphonia_core::meta::MetadataLog;
-
-use crate::{from_path_to_name_without_ext, TrackTime, PROBE};
 
 /// The basics where everything is built upon
 pub struct MusicTrack {
@@ -58,7 +55,7 @@ impl MusicTrack {
         probed.format
     }
 
-    pub fn get_duration_from_format(&self, format: Box<dyn FormatReader>) -> TrackTime {
+    pub fn get_duration_from_format(&self, format: &Box<dyn FormatReader>) -> TrackTime {
         let track = format.default_track().expect("Can't load tracks");
         let time_base = track.codec_params.time_base.unwrap();
 
@@ -79,6 +76,6 @@ impl MusicTrack {
 
     pub fn get_duration(&self) -> TrackTime {
         let format = self.get_format();
-        self.get_duration_from_format(format)
+        self.get_duration_from_format(&format)
     }
 }
