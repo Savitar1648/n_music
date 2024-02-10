@@ -94,6 +94,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f26201604c87b1e01bd3d98f8d5d9a8fcbb815e8cedb41ffccbeb4bf593a35fe"
 
 [[package]]
+name = "ahash"
+version = "0.8.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77c3a9648d43b9cd48db467b3f87fdd6e146bcc88ab0180006cef2179fe11d01"
+dependencies = [
+ "cfg-if",
+ "once_cell",
+ "version_check",
+ "zerocopy",
+]
+
+[[package]]
 name = "aho-corasick"
 version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -103,10 +115,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "aliasable"
-version = "0.1.3"
+name = "allocator-api2"
+version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "250f629c0161ad8107cf89319e990051fae62832fd343083bea452d93e2205fd"
+checksum = "0942ffc6dcaadf03badf6e6a2d0228460359d5e34b57ccdc720b7382dfbd5ec5"
 
 [[package]]
 name = "alsa"
@@ -438,26 +450,6 @@ dependencies = [
  "log",
  "pkg-config",
 ]
-
-[[package]]
-name = "audiotags"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "44e797ce0164cf599c71f2c3849b56301d96a3dc033544588e875686b050ed39"
-dependencies = [
- "audiotags-macro",
- "id3",
- "metaflac",
- "mp4ameta",
- "readme-rustdocifier",
- "thiserror",
-]
-
-[[package]]
-name = "audiotags-macro"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8eaa9b2312fc01f7291f3b7b0f52ed08b1c0177c96a2e696ab55695cc4d06889"
 
 [[package]]
 name = "autocfg"
@@ -867,15 +859,16 @@ dependencies = [
 
 [[package]]
 name = "cosmic-text"
-version = "0.8.0"
-source = "git+https://github.com/pop-os/cosmic-text?rev=79275d15e857428e9b8874f28413197e878f3788#79275d15e857428e9b8874f28413197e878f3788"
+version = "0.10.0"
+source = "git+https://github.com/pop-os/cosmic-text?rev=19b4d8336e34073bb51b83578d3d803c8c953787#19b4d8336e34073bb51b83578d3d803c8c953787"
 dependencies = [
- "aliasable",
  "fontdb",
  "libm",
  "log",
  "rangemap",
- "rustybuzz",
+ "rustc-hash",
+ "rustybuzz 0.12.1",
+ "self_cell 1.0.3",
  "swash",
  "sys-locale",
  "unicode-bidi",
@@ -1301,7 +1294,7 @@ dependencies = [
  "imgref",
  "lru",
  "rgb",
- "rustybuzz",
+ "rustybuzz 0.7.0",
  "unicode-bidi",
  "unicode-segmentation",
  "wasm-bindgen",
@@ -1365,16 +1358,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0bd7f3ea17572640b606b35df42cfb6ecdf003704b062580e59918692190b73d"
 
 [[package]]
-name = "fontdb"
-version = "0.14.1"
+name = "fontconfig-parser"
+version = "0.5.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af8d8cbea8f21307d7e84bca254772981296f058a1d36b461bf4d83a7499fc9e"
+checksum = "6a595cb550439a117696039dfc69830492058211b771a2a165379f2a1a53d84d"
 dependencies = [
+ "roxmltree",
+]
+
+[[package]]
+name = "fontdb"
+version = "0.16.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3890d0893c8253d3eb98337af18b3e1a10a9b2958f2a164b53a93fb3a3049e72"
+dependencies = [
+ "fontconfig-parser",
  "log",
- "memmap2 0.6.2",
+ "memmap2 0.9.4",
  "slotmap",
  "tinyvec",
- "ttf-parser 0.19.2",
+ "ttf-parser 0.20.0",
 ]
 
 [[package]]
@@ -1706,6 +1709,10 @@ name = "hashbrown"
 version = "0.14.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "290f1a1d9242c78d09ce40a5e87e7554ee637af1351968159f4952f028f75604"
+dependencies = [
+ "ahash",
+ "allocator-api2",
+]
 
 [[package]]
 name = "heck"
@@ -1755,17 +1762,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f31827a206f56af32e590ba56d5d2d085f558508192593743f16b2306495269f"
 dependencies = [
  "cc",
-]
-
-[[package]]
-name = "id3"
-version = "1.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ba0a11a3cf6f08d58a5629531bdb4e7c3b8b595e9812a31a7058b1176c4631e"
-dependencies = [
- "bitflags 2.4.2",
- "byteorder",
- "flate2",
 ]
 
 [[package]]
@@ -2072,9 +2068,9 @@ dependencies = [
 
 [[package]]
 name = "memmap2"
-version = "0.6.2"
+version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6d28bba84adfe6646737845bc5ebbfa2c08424eb1c37e94a1fd2a82adb56a872"
+checksum = "fe751422e4a8caa417e13c3ea66452215d7d63e19e604f4980461212f3ae1322"
 dependencies = [
  "libc",
 ]
@@ -2104,17 +2100,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5a634b1c61a95585bd15607c6ab0c4e5b226e695ff2800ba0cdccddf208c406c"
 dependencies = [
  "autocfg",
-]
-
-[[package]]
-name = "metaflac"
-version = "0.2.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e1470d3cc1bb0d692af5eb3afb594330b8ba09fd91c32c4e1c6322172a5ba750"
-dependencies = [
- "byteorder",
- "hex",
- "log",
 ]
 
 [[package]]
@@ -2148,27 +2133,10 @@ dependencies = [
 [[package]]
 name = "morphorm"
 version = "0.6.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "618fb979b26c8898ae0ed4677ca01385b0588bd4a27a8b2d3d9795f468e33366"
+source = "git+https://github.com/vizia/morphorm.git?branch=auto-min-size2#c75d442ca4d8f6b2ee3067c805194be552e9440e"
 dependencies = [
  "smallvec",
 ]
-
-[[package]]
-name = "mp4ameta"
-version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb23d62e8eb5299a3f79657c70ea9269eac8f6239a76952689bcd06a74057e81"
-dependencies = [
- "lazy_static",
- "mp4ameta_proc",
-]
-
-[[package]]
-name = "mp4ameta_proc"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07dcca13d1740c0a665f77104803360da0bdb3323ecce2e93fa2c959a6d52806"
 
 [[package]]
 name = "n_audio"
@@ -2192,7 +2160,6 @@ dependencies = [
 name = "n_player"
 version = "1.4.0"
 dependencies = [
- "audiotags",
  "bitcode",
  "infer",
  "n_audio",
@@ -2713,6 +2680,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "qfilter"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "be75003b0d85b855e77fa89dd7d6855ea18f5e5d7333d0804c9920c882709184"
+dependencies = [
+ "xxhash-rust",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2830,12 +2806,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "readme-rustdocifier"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08ad765b21a08b1a8e5cdce052719188a23772bcbefb3c439f0baaf62c56ceac"
-
-[[package]]
 name = "redox_syscall"
 version = "0.2.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2930,6 +2900,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "roxmltree"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3cd14fd5e3b777a7422cca79358c57a8f6e3a703d9ac187448d0daf220c2407f"
+
+[[package]]
 name = "rustc-hash"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2979,12 +2955,28 @@ checksum = "162bdf42e261bee271b3957691018634488084ef577dddeb6420a9684cab2a6a"
 dependencies = [
  "bitflags 1.3.2",
  "bytemuck",
- "libm",
  "smallvec",
  "ttf-parser 0.18.1",
  "unicode-bidi-mirroring",
  "unicode-ccc",
  "unicode-general-category",
+ "unicode-script",
+]
+
+[[package]]
+name = "rustybuzz"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f0ae5692c5beaad6a9e22830deeed7874eae8a4e3ba4076fb48e12c56856222c"
+dependencies = [
+ "bitflags 2.4.2",
+ "bytemuck",
+ "libm",
+ "smallvec",
+ "ttf-parser 0.20.0",
+ "unicode-bidi-mirroring",
+ "unicode-ccc",
+ "unicode-properties",
  "unicode-script",
 ]
 
@@ -3031,7 +3023,7 @@ dependencies = [
 [[package]]
 name = "selectors"
 version = "0.23.0"
-source = "git+https://github.com/vizia/vizia#37ad557dd2f4c39ca0593674e6aaf83c7f14bc6c"
+source = "git+https://github.com/vizia/vizia?branch=views-update#62e5c250d0e59783635567e59ceae477110c5a2c"
 dependencies = [
  "bitflags 1.3.2",
  "cssparser",
@@ -3644,12 +3636,6 @@ checksum = "0609f771ad9c6155384897e1df4d948e692667cc0588548b68eb44d052b27633"
 
 [[package]]
 name = "ttf-parser"
-version = "0.19.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49d64318d8311fc2668e48b63969f4343e0a85c4a109aa8460d6672e364b8bd1"
-
-[[package]]
-name = "ttf-parser"
 version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "17f77d76d837a7830fe1d4f12b7b4ba4192c1888001c7164257e4bc6d21d96b4"
@@ -3760,6 +3746,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3b09c83c3c29d37506a3e260c08c03743a6bb66a9cd432c6934ab501a190571f"
 
 [[package]]
+name = "unicode-properties"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e4259d9d4425d9f0661581b804cb85fe66a4c631cadd8f490d1c13a35d5d9291"
+
+[[package]]
 name = "unicode-script"
 version = "0.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3798,7 +3790,7 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 [[package]]
 name = "vizia"
 version = "0.1.0"
-source = "git+https://github.com/vizia/vizia#37ad557dd2f4c39ca0593674e6aaf83c7f14bc6c"
+source = "git+https://github.com/vizia/vizia?branch=views-update#62e5c250d0e59783635567e59ceae477110c5a2c"
 dependencies = [
  "vizia_core",
  "vizia_winit",
@@ -3807,7 +3799,7 @@ dependencies = [
 [[package]]
 name = "vizia_core"
 version = "0.1.0"
-source = "git+https://github.com/vizia/vizia#37ad557dd2f4c39ca0593674e6aaf83c7f14bc6c"
+source = "git+https://github.com/vizia/vizia?branch=views-update#62e5c250d0e59783635567e59ceae477110c5a2c"
 dependencies = [
  "accesskit",
  "bitflags 2.4.2",
@@ -3818,10 +3810,13 @@ dependencies = [
  "fluent-bundle",
  "fluent-langneg",
  "fnv",
+ "hashbrown",
  "image",
+ "indexmap",
  "instant",
  "log",
  "morphorm",
+ "qfilter",
  "swash",
  "sys-locale",
  "unic-langid",
@@ -3838,7 +3833,7 @@ dependencies = [
 [[package]]
 name = "vizia_derive"
 version = "0.1.0"
-source = "git+https://github.com/vizia/vizia#37ad557dd2f4c39ca0593674e6aaf83c7f14bc6c"
+source = "git+https://github.com/vizia/vizia?branch=views-update#62e5c250d0e59783635567e59ceae477110c5a2c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3848,12 +3843,12 @@ dependencies = [
 [[package]]
 name = "vizia_id"
 version = "0.1.0"
-source = "git+https://github.com/vizia/vizia#37ad557dd2f4c39ca0593674e6aaf83c7f14bc6c"
+source = "git+https://github.com/vizia/vizia?branch=views-update#62e5c250d0e59783635567e59ceae477110c5a2c"
 
 [[package]]
 name = "vizia_input"
 version = "0.1.0"
-source = "git+https://github.com/vizia/vizia#37ad557dd2f4c39ca0593674e6aaf83c7f14bc6c"
+source = "git+https://github.com/vizia/vizia?branch=views-update#62e5c250d0e59783635567e59ceae477110c5a2c"
 dependencies = [
  "bitflags 1.3.2",
  "keyboard-types",
@@ -3863,7 +3858,7 @@ dependencies = [
 [[package]]
 name = "vizia_storage"
 version = "0.1.0"
-source = "git+https://github.com/vizia/vizia#37ad557dd2f4c39ca0593674e6aaf83c7f14bc6c"
+source = "git+https://github.com/vizia/vizia?branch=views-update#62e5c250d0e59783635567e59ceae477110c5a2c"
 dependencies = [
  "morphorm",
  "vizia_id",
@@ -3872,7 +3867,7 @@ dependencies = [
 [[package]]
 name = "vizia_style"
 version = "0.1.0"
-source = "git+https://github.com/vizia/vizia#37ad557dd2f4c39ca0593674e6aaf83c7f14bc6c"
+source = "git+https://github.com/vizia/vizia?branch=views-update#62e5c250d0e59783635567e59ceae477110c5a2c"
 dependencies = [
  "bitflags 2.4.2",
  "cssparser",
@@ -3885,7 +3880,7 @@ dependencies = [
 [[package]]
 name = "vizia_window"
 version = "0.1.0"
-source = "git+https://github.com/vizia/vizia#37ad557dd2f4c39ca0593674e6aaf83c7f14bc6c"
+source = "git+https://github.com/vizia/vizia?branch=views-update#62e5c250d0e59783635567e59ceae477110c5a2c"
 dependencies = [
  "accesskit",
  "morphorm",
@@ -3896,7 +3891,7 @@ dependencies = [
 [[package]]
 name = "vizia_winit"
 version = "0.1.0"
-source = "git+https://github.com/vizia/vizia#37ad557dd2f4c39ca0593674e6aaf83c7f14bc6c"
+source = "git+https://github.com/vizia/vizia?branch=views-update#62e5c250d0e59783635567e59ceae477110c5a2c"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -4550,6 +4545,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d2d7d3948613f75c98fd9328cfdcc45acc4d360655289d0a7d4ec931392200a3"
 
 [[package]]
+name = "xxhash-rust"
+version = "0.8.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "53be06678ed9e83edb1745eb72efc0bbcd7b5c3c35711a860906aed827a13d61"
+
+[[package]]
 name = "yazi"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4626,6 +4627,26 @@ name = "zeno"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dd15f8e0dbb966fd9245e7498c7e9e5055d9e5c8b676b95bd67091cd11a1e697"
+
+[[package]]
+name = "zerocopy"
+version = "0.7.32"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "74d4d3961e53fa4c9a25a8637fc2bfaf2595b3d3ae34875568a5cf64787716be"
+dependencies = [
+ "zerocopy-derive",
+]
+
+[[package]]
+name = "zerocopy-derive"
+version = "0.7.32"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9ce1b18ccd8e73a9321186f97e46f9f04b778851177567b1975109d26a08d2a6"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.48",
+]
 
 [[package]]
 name = "zvariant"

@@ -1,6 +1,8 @@
-use audiotags::Tag;
 use bitcode::{Decode, Encode};
+use n_audio::meta::{StandardTagKey, Value};
 use n_audio::music_track::MusicTrack;
+use n_audio::queue::QueuePlayer;
+use n_audio::TrackTime;
 use std::cmp::Ordering;
 use std::ffi::OsStr;
 use std::fs;
@@ -9,31 +11,35 @@ use std::path::{Path, PathBuf};
 use std::sync::mpsc::Sender;
 use vizia::prelude::Data;
 
-use n_audio::queue::QueuePlayer;
-use n_audio::TrackTime;
-
 pub mod app;
 
 pub fn loader_thread(tx: Sender<LoaderMessage>, tracks: Vec<PathBuf>) {
     for (i, track) in tracks.iter().enumerate() {
         if let Ok(music_track) = MusicTrack::new(track) {
-            let duration = music_track.get_duration();
-            tx.send(LoaderMessage::Duration(i, duration.dur_secs))
-                .expect("can't send back loaded times");
-        }
-        if let Ok(tag) = Tag::new().read_from_path(track) {
-            if let Some(artists) = tag.artists() {
-                tx.send(LoaderMessage::Artist(i, artists.join(", ").to_string()))
-                    .expect("can't send back artist");
-            } else if let Some(artist) = tag.artist() {
-                tx.send(LoaderMessage::Artist(i, artist.to_string()))
-                    .expect("can't send back artist");
+            let mut format = music_track.get_format();
+            {
+                let time = music_track.get_duration_from_format(&format);
+                tx.send(LoaderMessage::Duration(i, time.dur_secs))
+                    .expect("can't send back loaded times");
             }
-
-            if let Some(cover) = tag.album_cover() {
-                tx.send(LoaderMessage::Image(i, cover.data.to_vec()))
-                    .expect("can't send back cover");
-            }
+            let metadata = format.metadata();
+            let current = metadata.current().unwrap().clone();
+            let tags = current.tags().to_vec();
+            tx.send(LoaderMessage::Artist(
+                i,
+                if let Value::String(artist) = &tags
+                    .iter()
+                    .filter(|tag| tag.std_key.is_some())
+                    .find(|tag| tag.std_key == Some(StandardTagKey::Artist))
+                    .unwrap()
+                    .value
+                {
+                    artist.to_string()
+                } else {
+                    String::from("ARTIST")
+                },
+            ))
+            .expect("can't send back artist");
         }
     }
 }
@@ -64,21 +70,29 @@ pub struct FileTrack {
     #[bitcode_hint(expected_range = "120..300")]
     duration: u64,
     cover: Vec<u8>,
+    current: bool,
 }
 
 impl Default for FileTrack {
     fn default() -> Self {
-        Self::new(String::from("NAME"), String::from("ARTIST"), 0, vec![])
+        Self::new(
+            String::from("NAME"),
+            String::from("ARTIST"),
+            0,
+            vec![],
+            false,
+        )
     }
 }
 
 impl FileTrack {
-    pub fn new(name: String, artist: String, duration: u64, cover: Vec<u8>) -> Self {
+    pub fn new(name: String, artist: String, duration: u64, cover: Vec<u8>, current: bool) -> Self {
         Self {
             name,
             artist,
             duration,
             cover,
+            current,
         }
     }
 

@@ -35,6 +35,7 @@ fn player_thread(rx: Receiver<PlayerMessage>, tx: Sender<PlayerMessage>) {
                         track.artist().to_string(),
                         track.duration(),
                         track.cover().clone(),
+                        false,
                     )
                 })
                 .collect(),
