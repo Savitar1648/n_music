@@ -185,7 +185,6 @@ impl Command for PlaybackSpeedCommand {
 
 fn main() {
     let player = Arc::new(Mutex::new(Player::new(
-        String::from("N Cli Player"),
         1.0,
         1.0,
     )));
