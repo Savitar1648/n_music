@@ -184,10 +184,7 @@ impl Command for PlaybackSpeedCommand {
 }
 
 fn main() {
-    let player = Arc::new(Mutex::new(Player::new(
-        1.0,
-        1.0,
-    )));
+    let player = Arc::new(Mutex::new(Player::new(1.0, 1.0)));
     let mut commands_register = CommandsRegister::new();
 
     commands_register.register_command(PlayCommand::new(player.clone()));
