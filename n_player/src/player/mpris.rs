@@ -20,7 +20,7 @@ impl PlayerBridge {
 #[async_trait]
 impl RootInterface for PlayerBridge {
     async fn raise(&self) -> Result<()> {
-        todo!()
+        Ok(())
     }
 
     async fn quit(&self) -> Result<()> {
@@ -35,7 +35,7 @@ impl RootInterface for PlayerBridge {
         Ok(false)
     }
 
-    async fn set_fullscreen(&self, _fullscreen: bool) -> mpris_server::zbus::Result<()> {
+    async fn set_fullscreen(&self, _fullscreen: bool) -> zbus::Result<()> {
         Err(Error::Failure(String::from("Can't set fullscreen")))
     }
 
@@ -99,7 +99,7 @@ impl PlayerInterface for PlayerBridge {
     }
 
     async fn stop(&self) -> Result<()> {
-        todo!()
+        Ok(())
     }
 
     async fn play(&self) -> Result<()> {
@@ -135,7 +135,7 @@ impl PlayerInterface for PlayerBridge {
         Ok(LoopStatus::Playlist)
     }
 
-    async fn set_loop_status(&self, _loop_status: LoopStatus) -> mpris_server::zbus::Result<()> {
+    async fn set_loop_status(&self, _loop_status: LoopStatus) -> zbus::Result<()> {
         Err(Error::Failure(String::from("can't set loop status")))
     }
 
@@ -143,7 +143,7 @@ impl PlayerInterface for PlayerBridge {
         Ok(1.0)
     }
 
-    async fn set_rate(&self, rate: PlaybackRate) -> mpris_server::zbus::Result<()> {
+    async fn set_rate(&self, rate: PlaybackRate) -> zbus::Result<()> {
         Err(Error::Failure(String::from("can't set rate")))
     }
 
@@ -151,7 +151,7 @@ impl PlayerInterface for PlayerBridge {
         Ok(true)
     }
 
-    async fn set_shuffle(&self, shuffle: bool) -> mpris_server::zbus::Result<()> {
+    async fn set_shuffle(&self, shuffle: bool) -> zbus::Result<()> {
         Err(Error::Failure(String::from("can't set shuffle")))
     }
 
@@ -165,7 +165,7 @@ impl PlayerInterface for PlayerBridge {
         Ok(1.0)
     }
 
-    async fn set_volume(&self, volume: Volume) -> mpris_server::zbus::Result<()> {
+    async fn set_volume(&self, volume: Volume) -> zbus::Result<()> {
         Ok(self
             .tx
             .send(PlayerMessage::Volume(volume as f32))

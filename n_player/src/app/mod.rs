@@ -128,32 +128,32 @@ pub fn run(rx: Receiver<PlayerMessage>, tx: Sender<PlayerMessage>) {
             VirtualList::new(ctx, AppData::tracks, 60.0, move |ctx, i, item| {
                 let track = item.get(ctx);
                 HStack::new(ctx, |ctx| {
-                    if !track.cover.is_empty() {
-                        let mut image_format = ImageFormat::Jpeg;
-                        let image =
-                            match image::load_from_memory_with_format(&track.cover, image_format) {
-                                Ok(image) => image,
-                                Err(_) => {
-                                    image_format = ImageFormat::Png;
-                                    match image::load_from_memory_with_format(
-                                        &track.cover,
-                                        image_format,
-                                    ) {
-                                        Ok(image) => image,
-                                        Err(_) => {
-                                            image_format = ImageFormat::WebP;
-                                            image::load_from_memory_with_format(
-                                                &track.cover,
-                                                image_format,
-                                            )
-                                            .unwrap()
-                                        }
-                                    }
-                                }
-                            };
-
-                        ctx.load_image("", image, ImageRetentionPolicy::DropWhenNoObservers);
-                    }
+                    // if !track.cover.is_empty() {
+                    //     let mut image_format = ImageFormat::Jpeg;
+                    //     let image =
+                    //         match image::load_from_memory_with_format(&track.cover, image_format) {
+                    //             Ok(image) => image,
+                    //             Err(_) => {
+                    //                 image_format = ImageFormat::Png;
+                    //                 match image::load_from_memory_with_format(
+                    //                     &track.cover,
+                    //                     image_format,
+                    //                 ) {
+                    //                     Ok(image) => image,
+                    //                     Err(_) => {
+                    //                         image_format = ImageFormat::WebP;
+                    //                         image::load_from_memory_with_format(
+                    //                             &track.cover,
+                    //                             image_format,
+                    //                         )
+                    //                         .unwrap()
+                    //                     }
+                    //                 }
+                    //             }
+                    //         };
+                    // 
+                    //     ctx.load_image("", image, ImageRetentionPolicy::DropWhenNoObservers);
+                    // }
                     VStack::new(ctx, |ctx| {
                         Label::new(ctx, &track.name).overflowx(Overflow::Hidden);
                         Label::new(ctx, &track.artist).overflowx(Overflow::Hidden);
