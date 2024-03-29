@@ -8,9 +8,7 @@ use std::fs;
 use std::ops::{Deref, DerefMut};
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::Sender;
-use vizia::prelude::Data;
 
-pub mod app;
 pub mod player;
 
 pub fn loader_thread(tx: Sender<LoaderMessage>, tracks: Vec<PathBuf>) {
@@ -62,13 +60,10 @@ pub enum PlayerMessage {
     TogglePause,
 }
 
-#[derive(Debug, Clone, Decode, Encode, Data)]
+#[derive(Debug, Clone, Decode, Encode)]
 pub struct FileTrack {
-    #[bitcode_hint(ascii)]
     name: String,
-    #[bitcode_hint(ascii)]
     artist: String,
-    #[bitcode_hint(expected_range = "120..300")]
     duration: u64,
     cover: Vec<u8>,
     current: bool,
@@ -158,7 +153,7 @@ impl Ord for FileTrack {
     }
 }
 
-#[derive(Clone, Debug, Decode, Encode, Data)]
+#[derive(Clone, Debug, Decode, Encode)]
 pub struct FileTracks {
     pub tracks: Vec<FileTrack>,
 }

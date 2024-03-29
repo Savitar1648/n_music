@@ -1,6 +1,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] //Hide console window in release builds on Windows, this blocks stdout.
 
-use n_player::app::run;
 use n_player::player::player::Player;
 use n_player::PlayerMessage;
 use std::sync::mpsc;
@@ -18,5 +17,5 @@ fn main() {
     thread::spawn(|| {
         player_thread(rx_a, tx_b);
     });
-    run(rx_b, tx_a);
+    // run(rx_b, tx_a);
 }

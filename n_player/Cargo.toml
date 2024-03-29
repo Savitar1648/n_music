@@ -7,10 +7,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-vizia = {git = "https://github.com/vizia/vizia", branch = "views-update"}
-bitcode = { version = "0.5.0", features = ["simdutf8", "bitcode_derive"] }
+xilem = { git = "https://github.com/linebender/xilem.git", features = ["wayland"] }
+bitcode = { version = "0.6.0" }
 n_audio = { path = "../n_audio" }
 infer = "0.15.0"
-rfd = "0.13.0"
-mpris-server = "0.7.0"
+rfd = "0.14.1"
+mpris-server = "0.8.0"
 smol = "2.0.0"

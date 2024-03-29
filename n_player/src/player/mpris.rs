@@ -2,8 +2,8 @@ use crate::PlayerMessage;
 use mpris_server::zbus::fdo::Result;
 use mpris_server::zbus::Error;
 use mpris_server::{
-    async_trait, zbus, LoopStatus, Metadata, PlaybackRate, PlaybackStatus, PlayerInterface,
-    RootInterface, Time, TrackId, Volume,
+    zbus, LoopStatus, Metadata, PlaybackRate, PlaybackStatus, PlayerInterface, RootInterface, Time,
+    TrackId, Volume,
 };
 use std::sync::mpsc::Sender;
 
@@ -17,7 +17,6 @@ impl PlayerBridge {
     }
 }
 
-#[async_trait]
 impl RootInterface for PlayerBridge {
     async fn raise(&self) -> Result<()> {
         Ok(())
@@ -68,7 +67,6 @@ impl RootInterface for PlayerBridge {
     }
 }
 
-#[async_trait]
 impl PlayerInterface for PlayerBridge {
     async fn next(&self) -> Result<()> {
         Ok(self

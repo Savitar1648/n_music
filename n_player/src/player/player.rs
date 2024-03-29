@@ -1,7 +1,8 @@
-use crate::player::server::ServerManager;
 use crate::{
     add_all_tracks_to_player, loader_thread, FileTrack, FileTracks, LoaderMessage, PlayerMessage,
 };
+use mpris_server::zbus::fdo::Result;
+use mpris_server::RootInterface;
 use n_audio::from_path_to_name_without_ext;
 use n_audio::queue::QueuePlayer;
 use std::path::PathBuf;
@@ -15,8 +16,6 @@ pub struct Player {
     rx_l: Receiver<LoaderMessage>,
     tx: Sender<PlayerMessage>,
     rx: Receiver<PlayerMessage>,
-    rx_s: Receiver<PlayerMessage>,
-    server_manager: ServerManager,
 }
 
 impl Player {
@@ -54,17 +53,11 @@ impl Player {
                 .expect("can't init tracks");
         }
 
-        let (tx_s, rx_s) = mpsc::channel();
-
-        let server_manager = ServerManager::new(tx_s);
-
         Self {
             player,
             rx_l,
             tx,
             rx,
-            rx_s,
-            server_manager,
         }
     }
 
@@ -76,10 +69,6 @@ impl Player {
 
     pub fn run_once(&mut self) {
         while let Ok(message) = self.rx.try_recv() {
-            self.parse_message(message);
-        }
-
-        while let Ok(message) = self.rx_s.try_recv() {
             self.parse_message(message);
         }
 
@@ -150,5 +139,56 @@ impl Player {
             }
             _ => {}
         }
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl RootInterface for Player {
+    async fn raise(&self) -> Result<()> {
+        todo!()
+    }
+
+    async fn quit(&self) -> Result<()> {
+        todo!()
+    }
+
+    async fn can_quit(&self) -> Result<bool> {
+        todo!()
+    }
+
+    async fn fullscreen(&self) -> Result<bool> {
+        todo!()
+    }
+
+    async fn set_fullscreen(&self, fullscreen: bool) -> Result<()> {
+        todo!()
+    }
+
+    async fn can_set_fullscreen(&self) -> Result<bool> {
+        todo!()
+    }
+
+    async fn can_raise(&self) -> Result<bool> {
+        todo!()
+    }
+
+    async fn has_track_list(&self) -> Result<bool> {
+        todo!()
+    }
+
+    async fn identity(&self) -> Result<String> {
+        todo!()
+    }
+
+    async fn desktop_entry(&self) -> Result<String> {
+        todo!()
+    }
+
+    async fn supported_uri_schemes(&self) -> Result<Vec<String>> {
+        todo!()
+    }
+
+    async fn supported_mime_types(&self) -> Result<Vec<String>> {
+        todo!()
     }
 }
