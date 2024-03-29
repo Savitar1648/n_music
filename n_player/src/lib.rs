@@ -1,5 +1,4 @@
 use bitcode::{Decode, Encode};
-use n_audio::meta::{StandardTagKey, Value};
 use n_audio::music_track::MusicTrack;
 use n_audio::queue::QueuePlayer;
 use n_audio::TrackTime;
@@ -12,34 +11,30 @@ use std::sync::mpsc::Sender;
 use vizia::prelude::Data;
 
 pub mod app;
+pub mod player;
 
 pub fn loader_thread(tx: Sender<LoaderMessage>, tracks: Vec<PathBuf>) {
     for (i, track) in tracks.iter().enumerate() {
         if let Ok(music_track) = MusicTrack::new(track) {
             let mut format = music_track.get_format();
-            {
-                let time = music_track.get_duration_from_format(&format);
-                tx.send(LoaderMessage::Duration(i, time.dur_secs))
-                    .expect("can't send back loaded times");
-            }
-            let metadata = format.metadata();
-            let current = metadata.current().unwrap().clone();
-            let tags = current.tags().to_vec();
+
+            tx.send(LoaderMessage::Duration(
+                i,
+                MusicTrack::get_duration_from_format(&format).dur_secs,
+            ))
+            .expect("can't send back loaded times");
+
             tx.send(LoaderMessage::Artist(
                 i,
-                if let Value::String(artist) = &tags
-                    .iter()
-                    .filter(|tag| tag.std_key.is_some())
-                    .find(|tag| tag.std_key == Some(StandardTagKey::Artist))
-                    .unwrap()
-                    .value
-                {
-                    artist.to_string()
-                } else {
-                    String::from("ARTIST")
-                },
+                MusicTrack::get_artist_from_format(&mut format),
             ))
             .expect("can't send back artist");
+
+            tx.send(LoaderMessage::Image(
+                i,
+                MusicTrack::get_cover_from_format(&mut format),
+            ))
+            .expect("can't send back cover art")
         }
     }
 }
@@ -56,9 +51,15 @@ pub enum PlayerMessage {
     Loaded(Vec<LoaderMessage>),
     Clicked(usize),
     Seek(f32),
+    SeekByTime(u64),
     Volume(f32),
     TimeUpdate(TrackTime),
     CurrentUpdated(usize),
+    Next,
+    Previous,
+    Pause,
+    Play,
+    TogglePause,
 }
 
 #[derive(Debug, Clone, Decode, Encode, Data)]
