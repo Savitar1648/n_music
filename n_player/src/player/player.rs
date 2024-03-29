@@ -2,20 +2,23 @@ use crate::{
     add_all_tracks_to_player, loader_thread, FileTrack, FileTracks, LoaderMessage, PlayerMessage,
 };
 use mpris_server::zbus::fdo::Result;
-use mpris_server::RootInterface;
+use mpris_server::{
+    zbus, LoopStatus, Metadata, PlaybackRate, PlaybackStatus, PlayerInterface, RootInterface, Time,
+    TrackId, Volume,
+};
 use n_audio::from_path_to_name_without_ext;
 use n_audio::queue::QueuePlayer;
 use std::path::PathBuf;
-use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
+use std::sync::{mpsc, Mutex, MutexGuard};
 use std::thread;
 use std::time::Duration;
 
 pub struct Player {
-    player: QueuePlayer,
-    rx_l: Receiver<LoaderMessage>,
+    player: Mutex<QueuePlayer>,
+    rx_l: Mutex<Receiver<LoaderMessage>>,
     tx: Sender<PlayerMessage>,
-    rx: Receiver<PlayerMessage>,
+    rx: Mutex<Receiver<PlayerMessage>>,
 }
 
 impl Player {
@@ -54,10 +57,10 @@ impl Player {
         }
 
         Self {
-            player,
-            rx_l,
+            player: Mutex::new(player),
+            rx_l: Mutex::new(rx_l),
             tx,
-            rx,
+            rx: Mutex::new(rx),
         }
     }
 
@@ -67,75 +70,84 @@ impl Player {
         }
     }
 
+    fn next(&self, player: &mut MutexGuard<QueuePlayer>) {
+        player.play_next();
+        self.tx
+            .send(PlayerMessage::CurrentUpdated(player.index()))
+            .expect("can't send updated track");
+    }
+
     pub fn run_once(&mut self) {
-        while let Ok(message) = self.rx.try_recv() {
-            self.parse_message(message);
-        }
+        {
+            let mut player = self.player.lock().unwrap();
+            let rx = self.rx.lock().unwrap();
+            let rx_l = self.rx_l.lock().unwrap();
+            while let Ok(message) = rx.try_recv() {
+                self.parse_message(message, &mut player);
+            }
 
-        let mut messages = vec![];
-        while let Ok(message) = self.rx_l.try_recv() {
-            messages.push(message);
-        }
-        if !messages.is_empty() {
-            self.tx
-                .send(PlayerMessage::Loaded(messages))
-                .expect("can't send loaded message");
-        }
+            let mut messages = vec![];
+            while let Ok(message) = rx_l.try_recv() {
+                messages.push(message);
+            }
+            if !messages.is_empty() {
+                self.tx
+                    .send(PlayerMessage::Loaded(messages))
+                    .expect("can't send loaded message");
+            }
 
-        if self.player.has_ended() {
-            self.player.play_next();
-            self.tx
-                .send(PlayerMessage::CurrentUpdated(self.player.index()))
-                .expect("can't send updated track");
-        }
+            if player.has_ended() {
+                self.next(&mut player);
+            }
 
-        if let Some(time) = self.player.get_time() {
-            self.tx
-                .send(PlayerMessage::TimeUpdate(time))
-                .expect("can't send updated time");
+            if let Some(time) = player.get_time() {
+                self.tx
+                    .send(PlayerMessage::TimeUpdate(time))
+                    .expect("can't send updated time");
+            }
         }
 
         thread::sleep(Duration::from_millis(500));
     }
 
-    pub fn parse_message(&mut self, message: PlayerMessage) {
+    pub fn parse_message(&mut self, message: PlayerMessage, player: &mut MutexGuard<QueuePlayer>) {
         match message {
             PlayerMessage::Clicked(i) => {
-                self.player.end_current().expect("can't stop current track");
-                self.player.play_index(i);
+                player.end_current().expect("can't stop current track");
+                player.play_index(i);
                 self.tx
-                    .send(PlayerMessage::CurrentUpdated(self.player.index()))
+                    .send(PlayerMessage::CurrentUpdated(player.index()))
                     .expect("can't send updated track");
             }
             PlayerMessage::Seek(seek) => {
-                self.player
+                player
                     .seek_to(seek.floor() as u64, seek.fract() as f64)
                     .expect("can't seek");
             }
             PlayerMessage::Volume(volume) => {
-                self.player.set_volume(volume).expect("can't set volume");
+                player.set_volume(volume).expect("can't set volume");
             }
             PlayerMessage::Next => {
-                self.player.end_current().expect("can't end current song");
-                self.player.play_next();
+                player.end_current().expect("can't end current song");
+                self.next(player);
             }
             PlayerMessage::Previous => {
-                self.player.end_current().expect("can't end current song");
-                self.player.play_previous();
+                player.end_current().expect("can't end current song");
+                player.play_previous();
             }
-            PlayerMessage::Pause => self.player.pause().expect("can't pause the player"),
+            PlayerMessage::Pause => player.pause().expect("can't pause the player"),
             PlayerMessage::TogglePause => {
-                if self.player.is_paused() {
-                    self.player.unpause().expect("can't unpause the player");
+                if player.is_paused() {
+                    player.unpause().expect("can't unpause the player");
                 } else {
-                    self.player.pause().expect("can't pause the player");
+                    player.pause().expect("can't pause the player");
                 }
             }
             PlayerMessage::Play => {
-                self.player.unpause().expect("can't unpause the player");
+                player.unpause().expect("can't unpause the player");
             }
             PlayerMessage::SeekByTime(time) => {
-                self.player.seek_to(time, 0.0).expect("can't seek by time");
+                player.seek_to(time, 0.0).expect("can't seek by time");
             }
             _ => {}
         }
@@ -145,50 +157,172 @@ impl Player {
 #[cfg(target_os = "linux")]
 impl RootInterface for Player {
     async fn raise(&self) -> Result<()> {
-        todo!()
+        Ok(())
     }
 
     async fn quit(&self) -> Result<()> {
-        todo!()
+        Ok(())
     }
 
     async fn can_quit(&self) -> Result<bool> {
-        todo!()
+        Ok(false)
     }
 
     async fn fullscreen(&self) -> Result<bool> {
-        todo!()
+        Ok(false)
     }
 
-    async fn set_fullscreen(&self, fullscreen: bool) -> Result<()> {
-        todo!()
+    async fn set_fullscreen(&self, _fullscreen: bool) -> zbus::Result<()> {
+        Ok(())
     }
 
     async fn can_set_fullscreen(&self) -> Result<bool> {
-        todo!()
+        Ok(false)
     }
 
     async fn can_raise(&self) -> Result<bool> {
-        todo!()
+        Ok(false)
     }
 
     async fn has_track_list(&self) -> Result<bool> {
-        todo!()
+        Ok(false)
     }
 
     async fn identity(&self) -> Result<String> {
-        todo!()
+        Ok(String::from("N Music"))
     }
 
     async fn desktop_entry(&self) -> Result<String> {
-        todo!()
+        Err(zbus::fdo::Error::NotSupported(String::from(
+            "Not yet supported",
+        )))
     }
 
     async fn supported_uri_schemes(&self) -> Result<Vec<String>> {
-        todo!()
+        Err(zbus::fdo::Error::NotSupported(String::from(
+            "Not yet supported",
+        )))
     }
 
     async fn supported_mime_types(&self) -> Result<Vec<String>> {
+        Err(zbus::fdo::Error::NotSupported(String::from(
+            "Not yet supported",
+        )))
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl PlayerInterface for Player {
+    async fn next(&self) -> Result<()> {
+        self.next(&mut self.player.lock().unwrap());
+        Ok(())
+    }
+
+    async fn previous(&self) -> Result<()> {
+        todo!()
+    }
+
+    async fn pause(&self) -> Result<()> {
+        todo!()
+    }
+
+    async fn play_pause(&self) -> Result<()> {
+        todo!()
+    }
+
+    async fn stop(&self) -> Result<()> {
+        todo!()
+    }
+
+    async fn play(&self) -> Result<()> {
+        todo!()
+    }
+
+    async fn seek(&self, offset: Time) -> Result<()> {
+        todo!()
+    }
+
+    async fn set_position(&self, track_id: TrackId, position: Time) -> Result<()> {
+        todo!()
+    }
+
+    async fn open_uri(&self, uri: String) -> Result<()> {
+        todo!()
+    }
+
+    async fn playback_status(&self) -> Result<PlaybackStatus> {
+        todo!()
+    }
+
+    async fn loop_status(&self) -> Result<LoopStatus> {
+        todo!()
+    }
+
+    async fn set_loop_status(&self, loop_status: LoopStatus) -> zbus::Result<()> {
+        todo!()
+    }
+
+    async fn rate(&self) -> Result<PlaybackRate> {
+        todo!()
+    }
+
+    async fn set_rate(&self, rate: PlaybackRate) -> zbus::Result<()> {
+        todo!()
+    }
+
+    async fn shuffle(&self) -> Result<bool> {
+        todo!()
+    }
+
+    async fn set_shuffle(&self, shuffle: bool) -> zbus::Result<()> {
+        todo!()
+    }
+
+    async fn metadata(&self) -> Result<Metadata> {
+        todo!()
+    }
+
+    async fn volume(&self) -> Result<Volume> {
+        todo!()
+    }
+
+    async fn set_volume(&self, volume: Volume) -> zbus::Result<()> {
+        todo!()
+    }
+
+    async fn position(&self) -> Result<Time> {
+        todo!()
+    }
+
+    async fn minimum_rate(&self) -> Result<PlaybackRate> {
+        todo!()
+    }
+
+    async fn maximum_rate(&self) -> Result<PlaybackRate> {
+        todo!()
+    }
+
+    async fn can_go_next(&self) -> Result<bool> {
+        todo!()
+    }
+
+    async fn can_go_previous(&self) -> Result<bool> {
+        todo!()
+    }
+
+    async fn can_play(&self) -> Result<bool> {
+        todo!()
+    }
+
+    async fn can_pause(&self) -> Result<bool> {
+        todo!()
+    }
+
+    async fn can_seek(&self) -> Result<bool> {
+        todo!()
+    }
+
+    async fn can_control(&self) -> Result<bool> {
         todo!()
     }
 }

@@ -1,5 +1,4 @@
 use crate::{from_path_to_name_without_ext, TrackTime, PROBE};
-use base64::Engine;
 use std::error::Error;
 use std::ffi::OsStr;
 use std::fs::File;
@@ -59,7 +58,7 @@ impl MusicTrack {
 
     pub fn get_duration(&self) -> TrackTime {
         let format = self.get_format();
-        Self::get_duration_from_format(&format)
+        Self::get_duration_from_format(format.as_ref())
     }
 
     pub fn get_artist(&mut self) -> String {
@@ -72,7 +71,7 @@ impl MusicTrack {
         Self::get_cover_from_format(&mut format)
     }
 
-    pub fn get_duration_from_format(format: &Box<dyn FormatReader>) -> TrackTime {
+    pub fn get_duration_from_format<F: FormatReader + ?Sized>(format: &F) -> TrackTime {
         let track = format.default_track().expect("Can't load tracks");
         let time_base = track.codec_params.time_base.unwrap();
 
