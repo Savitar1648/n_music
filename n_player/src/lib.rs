@@ -18,19 +18,19 @@ pub fn loader_thread(tx: Sender<LoaderMessage>, tracks: Vec<PathBuf>) {
 
             tx.send(LoaderMessage::Duration(
                 i,
-                MusicTrack::get_duration_from_format(&format).dur_secs,
+                MusicTrack::get_duration_from_format(format.as_ref()).dur_secs,
             ))
             .expect("can't send back loaded times");
 
             tx.send(LoaderMessage::Artist(
                 i,
-                MusicTrack::get_artist_from_format(&mut format),
+                MusicTrack::get_artist_from_format(format.as_mut()),
             ))
             .expect("can't send back artist");
 
             tx.send(LoaderMessage::Image(
                 i,
-                MusicTrack::get_cover_from_format(&mut format),
+                MusicTrack::get_cover_from_format(format.as_mut()),
             ))
             .expect("can't send back cover art")
         }

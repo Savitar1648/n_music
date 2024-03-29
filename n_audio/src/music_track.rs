@@ -63,12 +63,12 @@ impl MusicTrack {
 
     pub fn get_artist(&mut self) -> String {
         let mut format = self.get_format();
-        Self::get_artist_from_format(&mut format)
+        Self::get_artist_from_format(format.as_mut())
     }
 
     pub fn get_cover(&mut self) -> Vec<u8> {
         let mut format = self.get_format();
-        Self::get_cover_from_format(&mut format)
+        Self::get_cover_from_format(format.as_mut())
     }
 
     pub fn get_duration_from_format<F: FormatReader + ?Sized>(format: &F) -> TrackTime {
@@ -90,7 +90,7 @@ impl MusicTrack {
         }
     }
 
-    pub fn get_artist_from_format(format: &mut Box<dyn FormatReader>) -> String {
+    pub fn get_artist_from_format<F: FormatReader + ?Sized>(format: &mut F) -> String {
         let metadata = format.metadata();
         let current = metadata.current().unwrap().clone();
         let tags = current.tags().to_vec();
@@ -108,10 +108,10 @@ impl MusicTrack {
         }
     }
 
-    pub fn get_cover_from_format(format: &mut Box<dyn FormatReader>) -> Vec<u8> {
+    pub fn get_cover_from_format<F: FormatReader + ?Sized>(format: &mut F) -> Vec<u8> {
         let metadata = format.metadata();
         let current = metadata.current().unwrap().clone();
-        let tags = current.tags().to_vec();
+        let _tags = current.tags().to_vec();
 
         // if let Value::String(cover_encoded) =
         //     &tags.iter().find(|tag| tag.std_key.is_none()).unwrap().value

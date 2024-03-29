@@ -110,7 +110,7 @@ impl Player {
         thread::sleep(Duration::from_millis(500));
     }
 
-    pub fn parse_message(&mut self, message: PlayerMessage, player: &mut MutexGuard<QueuePlayer>) {
+    pub fn parse_message(&self, message: PlayerMessage, player: &mut MutexGuard<QueuePlayer>) {
         match message {
             PlayerMessage::Clicked(i) => {
                 player.end_current().expect("can't stop current track");
