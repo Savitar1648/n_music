@@ -17,5 +17,5 @@ fn main() {
     thread::spawn(|| {
         player_thread(rx_a, tx_b);
     });
-    // run(rx_b, tx_a);
+    run(rx_b, tx_a);
 }

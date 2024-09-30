@@ -15,7 +15,7 @@ use std::thread;
 use std::time::Duration;
 
 pub struct Player {
-    player: Mutex<QueuePlayer>,
+    pub(crate) player: Mutex<QueuePlayer>,
     rx_l: Mutex<Receiver<LoaderMessage>>,
     tx: Sender<PlayerMessage>,
     rx: Mutex<Receiver<PlayerMessage>>,
@@ -70,7 +70,7 @@ impl Player {
         }
     }
 
-    fn next(&self, player: &mut MutexGuard<QueuePlayer>) {
+    pub fn play_next(&self, player: &mut MutexGuard<QueuePlayer>) {
         player.play_next();
         self.tx
             .send(PlayerMessage::CurrentUpdated(player.index()))
@@ -97,7 +97,7 @@ impl Player {
             }
 
             if player.has_ended() {
-                self.next(&mut player);
+                self.play_next(&mut player);
             }
 
             if let Some(time) = player.get_time() {
@@ -129,7 +129,7 @@ impl Player {
             }
             PlayerMessage::Next => {
                 player.end_current().expect("can't end current song");
-                self.next(player);
+                self.play_next(player);
             }
             PlayerMessage::Previous => {
                 player.end_current().expect("can't end current song");
@@ -151,178 +151,5 @@ impl Player {
             }
             _ => {}
         }
-    }
-}
-
-#[cfg(target_os = "linux")]
-impl RootInterface for Player {
-    async fn raise(&self) -> Result<()> {
-        Ok(())
-    }
-
-    async fn quit(&self) -> Result<()> {
-        Ok(())
-    }
-
-    async fn can_quit(&self) -> Result<bool> {
-        Ok(false)
-    }
-
-    async fn fullscreen(&self) -> Result<bool> {
-        Ok(false)
-    }
-
-    async fn set_fullscreen(&self, _fullscreen: bool) -> zbus::Result<()> {
-        Ok(())
-    }
-
-    async fn can_set_fullscreen(&self) -> Result<bool> {
-        Ok(false)
-    }
-
-    async fn can_raise(&self) -> Result<bool> {
-        Ok(false)
-    }
-
-    async fn has_track_list(&self) -> Result<bool> {
-        Ok(false)
-    }
-
-    async fn identity(&self) -> Result<String> {
-        Ok(String::from("N Music"))
-    }
-
-    async fn desktop_entry(&self) -> Result<String> {
-        Err(zbus::fdo::Error::NotSupported(String::from(
-            "Not yet supported",
-        )))
-    }
-
-    async fn supported_uri_schemes(&self) -> Result<Vec<String>> {
-        Err(zbus::fdo::Error::NotSupported(String::from(
-            "Not yet supported",
-        )))
-    }
-
-    async fn supported_mime_types(&self) -> Result<Vec<String>> {
-        Err(zbus::fdo::Error::NotSupported(String::from(
-            "Not yet supported",
-        )))
-    }
-}
-
-#[cfg(target_os = "linux")]
-impl PlayerInterface for Player {
-    async fn next(&self) -> Result<()> {
-        self.next(&mut self.player.lock().unwrap());
-        Ok(())
-    }
-
-    async fn previous(&self) -> Result<()> {
-        todo!()
-    }
-
-    async fn pause(&self) -> Result<()> {
-        todo!()
-    }
-
-    async fn play_pause(&self) -> Result<()> {
-        todo!()
-    }
-
-    async fn stop(&self) -> Result<()> {
-        todo!()
-    }
-
-    async fn play(&self) -> Result<()> {
-        todo!()
-    }
-
-    async fn seek(&self, offset: Time) -> Result<()> {
-        todo!()
-    }
-
-    async fn set_position(&self, track_id: TrackId, position: Time) -> Result<()> {
-        todo!()
-    }
-
-    async fn open_uri(&self, uri: String) -> Result<()> {
-        todo!()
-    }
-
-    async fn playback_status(&self) -> Result<PlaybackStatus> {
-        todo!()
-    }
-
-    async fn loop_status(&self) -> Result<LoopStatus> {
-        todo!()
-    }
-
-    async fn set_loop_status(&self, loop_status: LoopStatus) -> zbus::Result<()> {
-        todo!()
-    }
-
-    async fn rate(&self) -> Result<PlaybackRate> {
-        todo!()
-    }
-
-    async fn set_rate(&self, rate: PlaybackRate) -> zbus::Result<()> {
-        todo!()
-    }
-
-    async fn shuffle(&self) -> Result<bool> {
-        todo!()
-    }
-
-    async fn set_shuffle(&self, shuffle: bool) -> zbus::Result<()> {
-        todo!()
-    }
-
-    async fn metadata(&self) -> Result<Metadata> {
-        todo!()
-    }
-
-    async fn volume(&self) -> Result<Volume> {
-        todo!()
-    }
-
-    async fn set_volume(&self, volume: Volume) -> zbus::Result<()> {
-        todo!()
-    }
-
-    async fn position(&self) -> Result<Time> {
-        todo!()
-    }
-
-    async fn minimum_rate(&self) -> Result<PlaybackRate> {
-        todo!()
-    }
-
-    async fn maximum_rate(&self) -> Result<PlaybackRate> {
-        todo!()
-    }
-
-    async fn can_go_next(&self) -> Result<bool> {
-        todo!()
-    }
-
-    async fn can_go_previous(&self) -> Result<bool> {
-        todo!()
-    }
-
-    async fn can_play(&self) -> Result<bool> {
-        todo!()
-    }
-
-    async fn can_pause(&self) -> Result<bool> {
-        todo!()
-    }
-
-    async fn can_seek(&self) -> Result<bool> {
-        todo!()
-    }
-
-    async fn can_control(&self) -> Result<bool> {
-        todo!()
     }
 }
